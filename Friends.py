@@ -5,8 +5,11 @@ import random
 import pickle
 import re
 import os
-
+import tkinter as tk
+from tkinter import PhotoImage
 from bs4 import BeautifulSoup
+from difflib import get_close_matches
+import webbrowser
 
 sys.setrecursionlimit(500)
 
@@ -72,23 +75,24 @@ def load_transcripts_tokens_titles():
             tokens[serie][episode] = tokens_list
 
 def find_matching_video(keyword):
-    video_folder = "videos"
-    video_files = os.listdir(video_folder)
+    # Check both "Videos" and "videos" folders
+    video_folders = ["Videos", "videos"]
+    for video_folder in video_folders:
+        if os.path.exists(video_folder):
+            video_files = os.listdir(video_folder)
+            keyword_parts = keyword.split('_')
 
-    keyword_parts = keyword.split('_')
+            def video_matches_parts(file_parts):
+                return all(part.lower() in file_parts for part in keyword_parts)
 
-    def video_matches_parts(file_parts):
-        return all(part.lower() in file_parts for part in keyword_parts)
+            matching_videos = [filename for filename in video_files if video_matches_parts(filename.lower().split('_'))]
+            if matching_videos:
+                return os.path.join(video_folder, random.choice(matching_videos))
 
-    matching_videos = [filename for filename in video_files if video_matches_parts(filename.lower().split('_'))]
-    if matching_videos:
-        return os.path.join(video_folder, random.choice(matching_videos))
-
-    # If exact match not found, find closest match using Levenshtein distance
-    from difflib import get_close_matches
-    closest_match = get_close_matches(keyword, video_files, n=1)
-    if closest_match:
-        return os.path.join(video_folder, closest_match[0])
+            # If exact match not found, find closest match using Levenshtein distance
+            closest_match = get_close_matches(keyword, video_files, n=1)
+            if closest_match:
+                return os.path.join(video_folder, closest_match[0])
 
     return None
 
@@ -108,11 +112,6 @@ def generate_random_episode(keyword):
         final_dict[serie_number, serie] = titles[serie_number][serie]
     random_episode = random.choice(list(final_dict.items()))
     return str(random_episode[0]) + ': ' + random_episode[1]
-
-def play_video_clip(video_path, script_line):
-    print("Playing video clip:", video_path)
-    # Add your code here to play the video clip
-    # (Since we don't have pyglet, you can use a suitable library for video playback)
 
 def generate_episode_script_with_video(keyword):
     selected_episode = generate_random_episode(keyword)
@@ -166,6 +165,30 @@ def generate_episode_script_with_video(keyword):
             current_location, current_character = None, None
 
         print(line)
+
+def play_video_clip(video_path, script_line):
+    # Replace this function with code for displaying video thumbnails
+    # For demonstration, we'll just use an image of a video player
+    root = tk.Tk()
+    root.title("Video Player")
+    root.geometry("800x600")
+
+    canvas = tk.Canvas(root, width=800, height=450)
+    canvas.pack()
+
+    video_player_image = PhotoImage(file="video_player_image.png")  # Replace this with the actual image path
+    canvas.create_image(0, 0, anchor=tk.NW, image=video_player_image)
+
+    subtitles = tk.Label(root, text="", anchor="w", font=("Arial", 16))
+    subtitles.pack(side=tk.BOTTOM, fill=tk.X)
+    subtitles.config(text=script_line)
+
+    def open_video(event):
+        webbrowser.open(video_path)
+
+    canvas.bind("<Button-1>", open_video)
+
+    root.mainloop()
 
 if __name__ == '__main__':
     load_transcripts_tokens_titles()
