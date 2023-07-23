@@ -7,7 +7,6 @@ import re
 import os
 
 from bs4 import BeautifulSoup
-import pyglet
 
 sys.setrecursionlimit(500)
 
@@ -37,6 +36,10 @@ transcripts = {}
 tokens = {}
 titles = {}
 
+def custom_tokenize(text):
+    # Custom tokenizer to split words based on spaces and punctuation
+    return re.findall(r'\b\w+\b', text.lower())
+
 def load_transcripts_tokens_titles():
     global transcripts, tokens, titles
     for serie, episodes in series:
@@ -63,8 +66,8 @@ def load_transcripts_tokens_titles():
             transcripts[serie][episode] = raw.get_text()
             titles[serie][episode] = title
 
-            tokens_raw = word_tokenize(transcripts[serie][episode])
-            tokens_no_punct = [item.lower() for item in tokens_raw if item not in punctuation]
+            tokens_raw = custom_tokenize(transcripts[serie][episode])
+            tokens_no_punct = [item for item in tokens_raw if item not in punctuation]
             tokens_list = [word for word in tokens_no_punct if word not in stop_words]
             tokens[serie][episode] = tokens_list
 
@@ -107,33 +110,9 @@ def generate_random_episode(keyword):
     return str(random_episode[0]) + ': ' + random_episode[1]
 
 def play_video_clip(video_path, script_line):
-    window = pyglet.window.Window(width=800, height=600)
-    player = pyglet.media.Player()
-    subtitles_label = pyglet.text.Label(
-        '',
-        font_name='Arial',
-        font_size=16,
-        x=10,
-        y=10,
-        width=window.width - 20,
-        height=200,
-        multiline=True,
-        anchor_x='left',
-        anchor_y='bottom'
-    )
-
-    @window.event
-    def on_draw():
-        window.clear()
-        player.get_texture().blit(0, 0)
-        subtitles_label.draw()
-
-    player.queue(pyglet.media.load(video_path))
-    player.play()
-
-    subtitles_label.text = script_line
-
-    pyglet.app.run()
+    print("Playing video clip:", video_path)
+    # Add your code here to play the video clip
+    # (Since we don't have pyglet, you can use a suitable library for video playback)
 
 def generate_episode_script_with_video(keyword):
     selected_episode = generate_random_episode(keyword)
