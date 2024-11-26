@@ -1,7 +1,6 @@
 import sys
 import urllib.error
 from urllib import request
-import random
 import pickle
 import re
 import os
@@ -10,6 +9,7 @@ from tkinter import PhotoImage
 from bs4 import BeautifulSoup
 from difflib import get_close_matches
 import webbrowser
+import secrets
 
 sys.setrecursionlimit(500)
 
@@ -87,7 +87,7 @@ def find_matching_video(keyword):
 
             matching_videos = [filename for filename in video_files if video_matches_parts(filename.lower().split('_'))]
             if matching_videos:
-                return os.path.join(video_folder, random.choice(matching_videos))
+                return os.path.join(video_folder, secrets.choice(matching_videos))
 
             # If exact match not found, find closest match using Levenshtein distance
             closest_match = get_close_matches(keyword, video_files, n=1)
@@ -110,7 +110,7 @@ def generate_random_episode(keyword):
     final_dict = {}
     for serie_number, serie in sorted_count:
         final_dict[serie_number, serie] = titles[serie_number][serie]
-    random_episode = random.choice(list(final_dict.items()))
+    random_episode = secrets.choice(list(final_dict.items()))
     return str(random_episode[0]) + ': ' + random_episode[1]
 
 def generate_episode_script_with_video(keyword):
